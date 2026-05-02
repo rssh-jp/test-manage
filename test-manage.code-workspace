@@ -1,6 +1,17 @@
 {
-  "folders": [
-    { "path": "." },
-    { "path": "repos/test-manage-be" }
-  ]
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "repos/test-manage-be"
+		},
+		{
+			"path": "repos/test-manage-bff"
+		},
+		{
+			"path": "repos/test-manage-fe"
+		}
+	],
+	"settings": {}
 }
