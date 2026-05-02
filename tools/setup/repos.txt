@@ -1,0 +1,13 @@
+# repos.txt
+# リポジトリのURLを1行ずつ記載してください。
+# Lines starting with # are comments and will be ignored.
+# Blank lines are also ignored.
+#
+# Example:
+# https://github.com/your-org/backend.git
+# https://github.com/your-org/bff.git
+# https://github.com/your-org/frontend.git
+
+git@github.com:rssh-jp/test-manage-be.git
+git@github.com:rssh-jp/test-manage-fe.git
+git@github.com:rssh-jp/test-manage-bff.git
