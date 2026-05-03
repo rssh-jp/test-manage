@@ -29,6 +29,32 @@ Clones all repositories listed in `tools/setup/repos.txt` into the `repos/` dire
 make setup
 ```
 
+### 開発起動 / Run Full Stack
+
+BE / BFF / FE をまとめて起動します。MySQL も同時に起動します。
+
+```bash
+make up
+```
+
+停止:
+
+```bash
+make down
+```
+
+ログ確認:
+
+```bash
+make logs
+```
+
+起動後のURL:
+
+- FE: `http://localhost:5173`
+- BFF: `http://localhost:8081`
+- BE: `http://localhost:8080`
+
 ---
 
 ## tools/setup/repos.txt の書式 / repos.txt Format

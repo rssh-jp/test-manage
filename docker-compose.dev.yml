@@ -1,0 +1,77 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testmanage
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./repos/test-manage-be/docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "appuser", "-papppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  be:
+    build:
+      context: ./repos/test-manage-be
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: appuser
+      DB_PASSWORD: apppassword
+      DB_NAME: testmanage
+      HTTP_PORT: 8080
+      GRPC_PORT: 9090
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ./repos/test-manage-be:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bff:
+    build:
+      context: ./repos/test-manage-bff
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    environment:
+      PORT: 8081
+      BE_BASE_URL: http://be:8080
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./repos/test-manage-bff:/app
+      - bff_node_modules:/app/node_modules
+    depends_on:
+      - be
+
+  fe:
+    build:
+      context: ./repos/test-manage-fe
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    environment:
+      VITE_BFF_BASE_URL: http://bff:8081
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./repos/test-manage-fe:/app
+      - fe_node_modules:/app/node_modules
+    depends_on:
+      - bff
+
+volumes:
+  db_data:
+  bff_node_modules:
+  fe_node_modules:
