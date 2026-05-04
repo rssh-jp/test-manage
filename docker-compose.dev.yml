@@ -40,6 +40,27 @@ services:
       db:
         condition: service_healthy
 
+  be-swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    restart: unless-stopped
+    environment:
+      SWAGGER_JSON: /openapi/openapi.yaml
+    ports:
+      - "8088:8080"
+    volumes:
+      - ./repos/test-manage-be/api/openapi.yaml:/openapi/openapi.yaml:ro
+    depends_on:
+      - be
+
+  be-grpc-ui:
+    image: fullstorydev/grpcui:latest
+    restart: unless-stopped
+    command: ["-plaintext", "-bind", "0.0.0.0", "-port", "8080", "be:9090"]
+    ports:
+      - "8089:8080"
+    depends_on:
+      - be
+
   bff:
     build:
       context: ./repos/test-manage-bff
