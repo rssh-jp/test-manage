@@ -11,7 +11,7 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./repos/test-manage-be/docker/mysql/init:/docker-entrypoint-initdb.d
+      - ../test-manage-be/docker/mysql/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "appuser", "-papppassword"]
       interval: 5s
@@ -20,7 +20,7 @@ services:
 
   be:
     build:
-      context: ./repos/test-manage-be
+      context: ../test-manage-be
       dockerfile: Dockerfile.dev
     restart: unless-stopped
     environment:
@@ -35,7 +35,7 @@ services:
       - "8080:8080"
       - "9090:9090"
     volumes:
-      - ./repos/test-manage-be:/app
+      - ../test-manage-be:/app
     depends_on:
       db:
         condition: service_healthy
@@ -48,7 +48,7 @@ services:
     ports:
       - "8088:8080"
     volumes:
-      - ./repos/test-manage-be/api/openapi.yaml:/openapi/openapi.yaml:ro
+      - ../test-manage-be/api/openapi.yaml:/openapi/openapi.yaml:ro
     depends_on:
       - be
 
@@ -63,7 +63,7 @@ services:
 
   bff:
     build:
-      context: ./repos/test-manage-bff
+      context: ../test-manage-bff
       dockerfile: Dockerfile.dev
     restart: unless-stopped
     environment:
@@ -72,14 +72,14 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./repos/test-manage-bff:/app
+      - ../test-manage-bff:/app
       - bff_node_modules:/app/node_modules
     depends_on:
       - be
 
   fe:
     build:
-      context: ./repos/test-manage-fe
+      context: ../test-manage-fe
       dockerfile: Dockerfile.dev
     restart: unless-stopped
     environment:
@@ -87,10 +87,27 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./repos/test-manage-fe:/app
+      - ../test-manage-fe:/app
       - fe_node_modules:/app/node_modules
+      # codegen 実行時に BFF のスキーマを参照するためのマウント
+      - ../test-manage-bff/src/schema.graphql:/app/bff-schema.graphql:ro
     depends_on:
       - bff
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "443:4430"   # FE HTTPS (https://localhost/)
+      - "8443:8443"  # BFF HTTPS
+      - "8444:8444"  # BE HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/ssl/certs:ro
+    depends_on:
+      - fe
+      - bff
+      - be
 
 volumes:
   db_data:

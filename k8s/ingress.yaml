@@ -1,0 +1,49 @@
+# Rancher Desktop の Traefik (443) → Docker コンテナへのルーティング
+# host.rancher-desktop.internal = k8s Pod から見たホスト（WSL）のゲートウェイ
+
+# FE (Vite dev server: host:5173)
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-manage-fe
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: host.rancher-desktop.internal
+  ports:
+    - port: 5173
+---
+# BFF (Fastify: host:8081)
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-manage-bff
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: host.rancher-desktop.internal
+  ports:
+    - port: 8081
+---
+# Traefik IngressRoute: https://localhost/ → FE / BFF
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-manage
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # /api/* → BFF (Vite proxy を使わずブラウザから直接ルーティング)
+    - match: PathPrefix(`/api`)
+      kind: Rule
+      services:
+        - name: test-manage-bff
+          port: 8081
+    # /* → FE
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: test-manage-fe
+          port: 5173

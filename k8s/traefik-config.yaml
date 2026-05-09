@@ -1,0 +1,14 @@
+# Rancher Desktop 管理の Traefik に ExternalName Service を許可させる設定
+# これにより IngressRoute から Docker コンテナへのルーティングが可能になる
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    providers:
+      kubernetesCRD:
+        allowExternalNameServices: true
+      kubernetesIngress:
+        allowExternalNameServices: true
